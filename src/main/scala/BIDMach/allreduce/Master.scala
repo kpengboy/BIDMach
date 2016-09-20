@@ -118,25 +118,25 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
   def setMachineNumbers {
     if (opts.trace > 2) log("Broadcasting setMachineNumbers\n");
     val futures = new Array[Future[_]](M);
-  sendTiming = true;
-  val timeout = executor.submit(new TimeoutThread(opts.sendTimeout, futures));
-  for (imach <- 0 until M) {
-    val cmd = new SetMachineCommand(round, 0, imach);
-    cmd.encode
-    futures(imach) = send(cmd, workers(imach));
-  }
-  for (imach <- 0 until M) {
-    try {
-      futures(imach).get()
-    } catch {
-      case e:Exception => {}
+    sendTiming = true;
+    val timeout = executor.submit(new TimeoutThread(opts.sendTimeout, futures));
+    for (imach <- 0 until M) {
+      val cmd = new SetMachineCommand(round, 0, imach);
+      cmd.encode
+      futures(imach) = send(cmd, workers(imach));
     }
-    if (futures(imach).isCancelled()) {
-      if (opts.trace > 0) log("Broadcast to machine %d timed out, cmd setMachineNumbers\n" format (imach));
+    for (imach <- 0 until M) {
+      try {
+	futures(imach).get()
+      } catch {
+	case e:Exception => {}
+      }
+      if (futures(imach).isCancelled()) {
+	if (opts.trace > 0) log("Broadcast to machine %d timed out, cmd setMachineNumbers\n" format (imach));
+      }
     }
-  }
-  sendTiming = false;
-  timeout.cancel(true);
+    sendTiming = false;
+    timeout.cancel(true);
   }
 
   def broadcastCommand(cmd:Command) {
