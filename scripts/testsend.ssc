@@ -1,4 +1,4 @@
-
+import java.net.InetSocketAddress
 import BIDMach.allreduce.{Master,Worker,Command}
 
 def stringAddrToInt(s:String) = {
@@ -6,7 +6,7 @@ def stringAddrToInt(s:String) = {
     ((((((parts(0) << 8) + parts(1)) << 8) + parts(2)) << 8) + parts(3));
 }
     
-val addresses = scala.io.Source.fromFile("/opt/BIDMach/scripts/hosts.txt").getLines.map(stringAddrToInt(_)).toArray
+val addresses = scala.io.Source.fromFile("/opt/BIDMach/scripts/hosts.txt").getLines.map(new InetSocketAddress(_, 50050)).toArray
 
 val a = new Master();
 val opts = a.opts;
@@ -19,14 +19,13 @@ val nmachines = addresses.length;
 
 val gmods = irow(nmachines);
 val gmachines = irow(0->nmachines);
-val workerIPs = new IMat(1, nmachines, addresses);
 
 a.init
 //a.setMachineNumbers
 
 
-a.config(gmods, gmachines, workerIPs)
-//a.sendConfig
+a.config(gmods, gmachines, addresses)
+a.sendConfig
 
 //a.startLearners
 
