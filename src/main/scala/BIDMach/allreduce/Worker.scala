@@ -19,7 +19,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import scala.tools.nsc.interpreter.IMain
+import java.util.concurrent.Callable
+
+trait SerializableCallable[T] extends Callable[T] with Serializable {}
 
 class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
 

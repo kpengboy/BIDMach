@@ -1,7 +1,7 @@
 import BIDMach.allreduce.{Master,Worker,Command}
 
 val w = new Worker();
-val opts = a.opts;
+val opts = w.opts;
 opts.trace = 3;
 opts.machineTrace = 1;
 

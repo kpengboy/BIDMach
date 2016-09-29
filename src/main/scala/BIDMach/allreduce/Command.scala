@@ -375,7 +375,7 @@ extends Command(Command.evalStringCtype, round0, dest0, bytes.size, bytes, bytes
   }
 }
 
-class CallCommand(round0:Int, dest0:Int,callable0:Callable[AnyRef], bytes:Array[Byte])
+class CallCommand(round0:Int, dest0:Int, callable0:Callable[AnyRef], bytes:Array[Byte])
 extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size) {
 
   var callable = callable0;

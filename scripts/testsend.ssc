@@ -1,8 +1,9 @@
-import java.net.InetSocketAddress
+import java.net.{InetAddress,InetSocketAddress}
 import BIDMach.allreduce.{Master,Worker,Command}
 
-val addresses = scala.io.Source.fromFile("/opt/BIDMach/scripts/hosts.txt").
-  getLines.map(new InetSocketAddress(_, 50050)).toArray
+val addresses = scala.io.Source.fromFile("/opt/spark/conf/slaves").getLines.
+  map(InetAddress.getByName(_).getHostAddress()).
+  map(new InetSocketAddress(_, 50050)).toArray
 
 val m = new Master();
 val opts = m.opts;
