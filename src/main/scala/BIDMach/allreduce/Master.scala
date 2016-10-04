@@ -89,6 +89,19 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
     broadcastCommand(cmd);
   }
 
+  def parAssign(obj:AnyRef, str:String, timesecs:Int = 10):Array[AnyRef] = {
+    val cmd = new AssignObjectCommand(round, 0, obj, str);
+    for (i <- 0 until M) results(i) = null;
+    nresults = 0;
+    broadcastCommand(cmd); 
+    var tmsec = 0;
+    while (nresults < M && tmsec < timesecs * 1000) {
+      Thread.`sleep`(10);
+      tmsec += 10;
+    }
+    results.clone
+  }
+  
   def parEval(str:String, timesecs:Int = 10):Array[AnyRef] = {
     val cmd = new EvalStringCommand(round, 0, str);
     for (i <- 0 until M) results(i) = null;
