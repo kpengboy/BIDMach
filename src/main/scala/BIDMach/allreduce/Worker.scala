@@ -20,6 +20,8 @@ import java.io.IOException;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.util.concurrent.Callable
+import javax.script.ScriptContext
+
 
 trait SerializableCallable[T] extends Callable[T] with Serializable {}
 
@@ -34,6 +36,7 @@ class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
   var model:Model = null;
   var intp:ScriptEngine = null;
   var masterSocketAddr:InetSocketAddress = null;
+  var testing:String = "test";
 
   def start(learner0:Learner) = {
     learner = learner0;
@@ -42,6 +45,8 @@ class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
     listener = new CommandListener(opts.commandSocketNum, this);
     listenerTask = executor.submit(listener);
     intp = new ScriptEngineManager().getEngineByName("scala");
+    intp.put("worker", "try");
+    intp.put("worker2", this);
   }
 
   def config(
@@ -188,6 +193,7 @@ class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
 	      obj = newcmd.obj;
 	      str = newcmd.str;
 	      intp.put(str, obj);
+	      //intp.getBindings(ScriptContext.ENGINE_SCOPE).put(str,obj);
 	      if (opts.trace > 2) log("Received %s\n" format newcmd.toString);
 	      if (opts.respond > 0) sendMaster(new Response(Command.assignObjectCtype, newcmd.round, imach));
 	    }
@@ -204,9 +210,10 @@ class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
 	      val newcmd = new CallCommand(0, cmd.dest, null, cmd.bytes);
 	      newcmd.decode;
 	      obj = newcmd.callable.call;
+	      if (opts.trace > 2) log("Received %s\n" format newcmd.toString);
+	      if (opts.trace > 3) log("Computed %s\n" format obj.toString);
 	      val resp = new ReturnObjectResponse(cmd.round, cmd.dest, obj);
 	      sendMaster(resp);
-	      if (opts.trace > 2) log("Received %s\n" format newcmd.toString);
 	    }
 	  }
 	}

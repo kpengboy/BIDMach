@@ -2,7 +2,7 @@ import BIDMach.allreduce.{Master,Worker,Command}
 
 val w = new Worker();
 val opts = w.opts;
-opts.trace = 3;
+opts.trace = 4;
 opts.machineTrace = 1;
 
 w.start(null)

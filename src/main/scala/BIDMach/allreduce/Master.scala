@@ -93,7 +93,7 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
     val cmd = new AssignObjectCommand(round, 0, obj, str);
     for (i <- 0 until M) results(i) = null;
     nresults = 0;
-    broadcastCommand(cmd); 
+    broadcastCommand(cmd);
     var tmsec = 0;
     while (nresults < M && tmsec < timesecs * 1000) {
       Thread.`sleep`(10);
@@ -101,7 +101,7 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
     }
     results.clone
   }
-  
+
   def parEval(str:String, timesecs:Int = 10):Array[AnyRef] = {
     val cmd = new EvalStringCommand(round, 0, str);
     for (i <- 0 until M) results(i) = null;
@@ -115,7 +115,7 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
     results.clone
   }
 
-  def parCall(callable:Callable[AnyRef], timesecs:Int = 10):Array[AnyRef] = {
+  def parCall(callable:SerCallable[AnyRef], timesecs:Int = 10):Array[AnyRef] = {
     val cmd = new CallCommand(round, 0, callable);
     for (i <- 0 until M) results(i) = null;
     nresults = 0;
@@ -242,18 +242,19 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
   def handleResponse(resp:Response) = {
     if (resp.magic != Response.magic) {
       if (opts.trace > 0) log("Master got response with bad magic number %d\n" format (resp.magic));
-      } else {
-	if (resp.rtype == activeCommand.ctype && resp.round == activeCommand.round) {
-	  inctable(responses, resp.src);
-	} else if (activeCommand.ctype == Command.evalStringCtype && resp.rtype == Command.returnObjectCtype && resp.round == activeCommand.round) {
-	  val newresp = new ReturnObjectResponse(resp.round, resp.src, null, resp.bytes);
-	  newresp.decode;
-	  addObj(newresp.obj, resp.src)
-	  if (opts.trace > 2) log("Received %s\n" format newresp.toString);
-	  } else if (resp.rtype == Command.learnerDoneCtype) {
-	    inctable(learners, resp.src);
-	  } else if (opts.trace > 0) log("Master got response with bad type/round (%d,%d), should be (%d,%d)\n" format (resp.rtype, resp.round, activeCommand.ctype, activeCommand.round));
-      }
+    } else {
+      if (resp.rtype == activeCommand.ctype && resp.round == activeCommand.round) {
+	inctable(responses, resp.src);
+      } else if ((activeCommand.ctype == Command.evalStringCtype || activeCommand.ctype == Command.callCtype)
+	         && resp.rtype == Command.returnObjectCtype && resp.round == activeCommand.round) {
+	val newresp = new ReturnObjectResponse(resp.round, resp.src, null, resp.bytes);
+	newresp.decode;
+	addObj(newresp.obj, resp.src)
+	if (opts.trace > 2) log("Received %s\n" format newresp.toString);
+      } else if (resp.rtype == Command.learnerDoneCtype) {
+	inctable(learners, resp.src);
+      } else if (opts.trace > 0) log("Master got response with bad type/round (%d,%d), should be (%d,%d)\n" format (resp.rtype, resp.round, activeCommand.ctype, activeCommand.round));
+    }
   }
 
   class ResponseListener(val socketnum:Int, me:Master) extends Runnable {
