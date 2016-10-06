@@ -26,11 +26,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-
-abstract class SerCallable[AnyRef] extends Callable[AnyRef] with Serializable {}
-
-class CallCommandTest[AnyRef] extends SerCallable[AnyRef] {
-  def call() = { (2+2).asInstanceOf[AnyRef] }
+class CallCommandTest extends Callable[AnyRef] with Serializable {
+  def call():AnyRef = { (2+2).asInstanceOf[AnyRef] }
 }
 
 class Command(val ctype:Int, round0:Int, dest0:Int, val clen:Int, val bytes:Array[Byte], val blen:Int) {
@@ -381,12 +378,12 @@ extends Command(Command.evalStringCtype, round0, dest0, bytes.size, bytes, bytes
   }
 }
 
-class CallCommand(round0:Int, dest0:Int, callable0:SerCallable[AnyRef], bytes:Array[Byte])
+class CallCommand(round0:Int, dest0:Int, callable0:Callable[AnyRef], bytes:Array[Byte])
 extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size) {
 
   var callable = callable0;
 
-  def this(round0:Int, dest0:Int, callable0:SerCallable[AnyRef]) = {
+  def this(round0:Int, dest0:Int, callable0:Callable[AnyRef]) = {
     this(round0, dest0, callable0, {
       val out  = new ByteArrayOutputStream()
       val output = new ObjectOutputStream(out)
@@ -401,14 +398,8 @@ extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size)
 
   override def decode():Unit = {
     val in = new ByteArrayInputStream(bytes);
-    val input = new ObjectInputStream(in) {
-      // Source: http://stackoverflow.com/a/22375260
-      override def resolveClass(desc: java.io.ObjectStreamClass): Class[_] = {
-	try { Class.forName(desc.getName, false, getClass.getClassLoader) }
-	catch { case ex: ClassNotFoundException => super.resolveClass(desc) }
-      }
-    };
-    callable = input.readObject.asInstanceOf[SerCallable[AnyRef]];
+    val input = new ObjectInputStream(in);
+    callable = input.readObject.asInstanceOf[Callable[AnyRef]];
     input.close;
   }
 
