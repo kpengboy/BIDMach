@@ -228,7 +228,7 @@ object GLM {
   val maxp = 2;
   val svm = 3;
 
-  object LinearLink extends GLMlink {
+  object LinearLink extends GLMlink with Serializable {
     def link(in:Float) = {
       in
     }
@@ -257,7 +257,7 @@ object GLM {
     val fnflops = 2;
   }
 
-  object LogisticLink extends GLMlink {
+  object LogisticLink extends GLMlink with Serializable {
     def link(in:Float) = {
       math.log(in / (1.0f - in)).toFloat;
     }
@@ -292,7 +292,7 @@ object GLM {
   }
 
 
-  object MaxpLink extends GLMlink {
+  object MaxpLink extends GLMlink with Serializable {
     def link(in:Float) = {
       math.log(in / (1.0f - in)).toFloat;
     }
@@ -326,7 +326,7 @@ object GLM {
     val fnflops = 20;
   }
 
-  object SVMLink extends GLMlink {
+  object SVMLink extends GLMlink with Serializable {
     def link(in:Float) = {
       in
     }
@@ -356,7 +356,7 @@ object GLM {
     val fnflops = 2;
   }
 
-  object LinkEnum extends Enumeration {
+  object LinkEnum extends Enumeration with Serializable {
     type LinkEnum = Value;
     val Linear, Logistic, Maxp, SVMLink = Value
   }
@@ -802,19 +802,6 @@ object GLM {
   class LearnOptions extends Learner.Options with GLM.Opts with MatSource.Opts with ADAGrad.Opts with L1Regularizer.Opts
   class Learn12Options extends Learner.Options with GLM.Opts with MatSource.Opts with ADAGrad.Opts with L1Regularizer.Opts with L2Regularizer.Opts
 
-  // A learner with no bound datasource
-  def learner():(Learner, LearnOptions) = {
-    val opts = new LearnOptions;
-    val nn = new Learner(
-      null,
-      new GLM(opts),
-      mkRegularizer(opts),
-      new ADAGrad(opts),
-      null,
-      opts)
-    (nn, opts)
-  }
-
   // Basic in-memory learner with generated target
   def learner(mat0:Mat, d:Int = 0) = {
     val opts = new LearnOptions
@@ -923,6 +910,21 @@ object GLM {
   }
 
   class GOptions extends Learner.Options with GLM.Opts with ADAGrad.Opts with L1Regularizer.Opts
+  class GUnboundOptions extends Learner.Options with GLM.Opts with ADAGrad.Opts with L1Regularizer.Opts with DataSource.Opts with Batch.Opts;
+
+  // A learner with no bound datasource
+  def learner():(Learner, GUnboundOptions) = {
+    val opts = new GUnboundOptions;
+    opts.lrate = 1f
+    val nn = new Learner(
+      null,
+      new GLM(opts),
+      mkRegularizer(opts),
+      new ADAGrad(opts),
+      null,
+      opts)
+    (nn, opts)
+  }
 
   // A learner that uses a general data source (e.g. a files data source).
   // The datasource options (like batchSize) need to be set externally.
