@@ -802,6 +802,19 @@ object GLM {
   class LearnOptions extends Learner.Options with GLM.Opts with MatSource.Opts with ADAGrad.Opts with L1Regularizer.Opts
   class Learn12Options extends Learner.Options with GLM.Opts with MatSource.Opts with ADAGrad.Opts with L1Regularizer.Opts with L2Regularizer.Opts
 
+  // A learner with no bound datasource
+  def learner():(Learner, LearnOptions) = {
+    val opts = new LearnOptions;
+    val nn = new Learner(
+      null,
+      new GLM(opts),
+      mkRegularizer(opts),
+      new ADAGrad(opts),
+      null,
+      opts)
+    (nn, opts)
+  }
+
   // Basic in-memory learner with generated target
   def learner(mat0:Mat, d:Int = 0) = {
     val opts = new LearnOptions

@@ -5,7 +5,7 @@ BIDMACH_SCRIPTS="${BASH_SOURCE[0]}"
 if [ ! `uname` = "Darwin" ]; then
   BIDMACH_SCRIPTS=`readlink -f "${BIDMACH_SCRIPTS}"`
   export WGET='wget -c --no-check-certificate'
-else 
+else
   while [ -L "${BIDMACH_SCRIPTS}" ]; do
     BIDMACH_SCRIPTS=`readlink "${BIDMACH_SCRIPTS}"`
   done
@@ -14,7 +14,7 @@ fi
 export BIDMACH_SCRIPTS=`dirname "$BIDMACH_SCRIPTS"`
 cd ${BIDMACH_SCRIPTS}
 BIDMACH_SCRIPTS=`pwd`
-BIDMACH_SCRIPTS="$( echo ${BIDMACH_SCRIPTS} | sed 's+/cygdrive/\([a-z]\)+\1:+' )" 
+BIDMACH_SCRIPTS="$( echo ${BIDMACH_SCRIPTS} | sed 's+/cygdrive/\([a-z]\)+\1:+' )"
 
 
 echo "Loading MNIST8M data"

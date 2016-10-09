@@ -30,8 +30,8 @@ val tcats = loadFMat("/opt/BIDMach/data/MNIST8M/parts/cats%02d.fmat.lz4" format 
 val tcat = maxi2(tcats, 1)._2
 
 val pmodel = new GLM(new GLM.PredOptions());
-val pots pmodel.copyFrom(nn.model);
-popts = pmodel.opts.asInstanceOf[GLM.Opts]
+pmodel.copyFrom(nn.model);
+val popts = pmodel.opts.asInstanceOf[GLM.Opts]
 popts.targmap = opts.targmap;
 popts.links = opts.links;
 popts.targets = null
