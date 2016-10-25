@@ -62,7 +62,7 @@ class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
     workers = workers0;
     masterSocketAddr = masterSocketAddr0;
     if (machine != null) machine.stop;
-    machine = new Machine(null, groups, imach, M, opts.useLong, opts.bufsize, false, opts.machineTrace, opts.replicate, workers.map(x => x.toString()));
+    machine = new Machine(null, groups, imach, M, opts.useLong, opts.bufsize, false, opts.machineTrace, opts.replicate, workers);
     machine.configTimeout = opts.configTimeout;
     machine.reduceTimeout = opts.reduceTimeout;
     machine.sendTimeout = opts.sendTimeout;
@@ -207,7 +207,7 @@ class Worker(override val opts:Worker.Opts = new Worker.Options) extends Host {
 	      if (opts.trace > 2) log("Received %s\n" format newcmd.toString);
 	    }
 	    case Command.callCtype => {
-	      val newcmd = new CallCommand(0, cmd.dest, null, cmd.bytes);
+	      val newcmd = new CallCommand(0, cmd.dest, null,null, cmd.bytes);
 	      newcmd.decode;
 	      obj = newcmd.callable.call;
 	      if (opts.trace > 2) log("Received %s\n" format newcmd.toString);

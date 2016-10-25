@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.lang.ClassLoader;
 
 class CallCommandTest extends Callable[AnyRef] with Serializable {
   def call():AnyRef = { (2+2).asInstanceOf[AnyRef] }
@@ -378,15 +379,17 @@ extends Command(Command.evalStringCtype, round0, dest0, bytes.size, bytes, bytes
   }
 }
 
-class CallCommand(round0:Int, dest0:Int, callable0:Callable[AnyRef], bytes:Array[Byte])
+class CallCommand(round0:Int, dest0:Int, callable0:Callable[AnyRef], class0:Class[_ <:Callable[AnyRef]], bytes:Array[Byte])
 extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size) {
 
   var callable = callable0;
+  var one_class = class0;
 
-  def this(round0:Int, dest0:Int, callable0:Callable[AnyRef]) = {
-    this(round0, dest0, callable0, {
+  def this(round0:Int, dest0:Int, callable0:Callable[AnyRef], class0:Class[_ <:Callable[AnyRef]]) = {
+    this(round0, dest0, callable0, class0, {
       val out  = new ByteArrayOutputStream()
       val output = new ObjectOutputStream(out)
+      output.writeObject(class0)
       output.writeObject(callable0)
       output.close
       out.toByteArray()
@@ -399,7 +402,11 @@ extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size)
   override def decode():Unit = {
     val in = new ByteArrayInputStream(bytes);
     val input = new ObjectInputStream(in);
-    callable = input.readObject.asInstanceOf[Callable[AnyRef]];
+    //val cl  = ClassLoader.getSystemClassLoader();
+    //one_class = cl.defineClass("testing",input.readObject.asInstanceOf[Array[Byte]]);
+    //cl.resolveClass(one_class);
+    one_class = input.readObject.asInstanceOf[Class[_ <:Callable[AnyRef]]];
+    //callable = input.readObject.asInstanceOf[one_class];
     input.close;
   }
 
