@@ -17,6 +17,7 @@ import java.net.InetSocketAddress;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import javax.script.ScriptEngine;
 
 
 class Master(override val opts:Master.Opts = new Master.Options) extends Host {
@@ -115,7 +116,7 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
     results.clone
   }
 
-  def parCall(func:() => AnyRef, timesecs:Int = 10):Array[AnyRef] = {
+  def parCall(func:(ScriptEngine) => AnyRef, timesecs:Int = 10):Array[AnyRef] = {
     val cmd = new CallCommand(round, 0, func);
     for (i <- 0 until M) results(i) = null;
     nresults = 0;
