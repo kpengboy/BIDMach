@@ -26,10 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-class CallCommandTest extends Callable[AnyRef] with Serializable {
-  def call():AnyRef = { (2+2).asInstanceOf[AnyRef] }
-}
-
 class Command(val ctype:Int, round0:Int, dest0:Int, val clen:Int, val bytes:Array[Byte], val blen:Int) {
   val magic = Command.magic;
   var dest = dest0;
@@ -97,7 +93,7 @@ extends Command(Command.configCtype, round0, dest0, clen, bytes, clen * 4) {
   def this(round0:Int, dest0:Int, gmods0:IMat, gridmachines0:IMat, workers:Array[InetSocketAddress],
            masterIP:InetAddress, masterResPort0:Int) =
     this(round0, dest0, gmods0, gridmachines0,
-      new IMat(1, workers.length, workers.map((x)=>Host.inetStringToInt(x.getHostString))),
+      new IMat(1, workers.length, workers.map((x)=>Host.inetStringToInt(x.getAddress.getHostAddress))),
       new IMat(1, workers.length, workers.map(_.getPort)),
       Host.inetStringToInt(masterIP.getHostAddress),
       masterResPort0,

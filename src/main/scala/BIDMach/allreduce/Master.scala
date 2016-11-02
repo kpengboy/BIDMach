@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.io.DataInputStream;
@@ -31,6 +32,7 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
   var learners:IMat = null;
   var results:Array[AnyRef] = null;
   var nresults = 0;
+  var masterIP:InetAddress = null;
 
   def init() {
     masterIP = InetAddress.getLocalHost;
@@ -265,6 +267,7 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
       try {
 	ss = new ServerSocket(socketnum);
       } catch {
+	case e:BindException => throw e
 	case e:Exception => {if (opts.trace > 0) log("Problem in ResponseListener\n%s" format Response.printStackTrace(e));}
       }
     }
@@ -282,7 +285,10 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
 	  }
 	  // This is probably due to the server shutting to. Don't do anything.
 	  case e:Exception => {
-	    if (opts.trace > 0) log("Master Response listener had a problem " + e);
+	    if (opts.trace > 0) {
+	      log("Master Response listener had a problem\n%s" format Response.printStackTrace(e));
+	      Thread.`sleep`(1000)
+	    }
 	  }
 	}
       }

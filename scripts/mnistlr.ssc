@@ -1,5 +1,5 @@
-val dir = "/opt/BIDMach/data/MNIST8M/parts/"
-val (nn, opts) = GLM.learner(dir+"data%02d.fmat.lz4", dir+"cats%02d.fmat.lz4")
+val data_dir = System.getenv("BIDMACH_DATA_HOME")+"/MNIST8M/parts/"
+val (nn, opts) = GLM.learner(data_dir+"data%02d.fmat.lz4", data_dir+"cats%02d.fmat.lz4")
 
 Mat.checkMKL
 Mat.checkCUDA
@@ -25,8 +25,8 @@ println("Done training! Checking training set accuracy...")
 
 val randPartNum = scala.util.Random.nextInt(80)
 
-var test = loadFMat("/opt/BIDMach/data/MNIST8M/parts/data%02d.fmat.lz4" format randPartNum)
-val tcats = loadFMat("/opt/BIDMach/data/MNIST8M/parts/cats%02d.fmat.lz4" format randPartNum)
+var test = loadFMat(data_dir+"data%02d.fmat.lz4" format randPartNum)
+val tcats = loadFMat(data_dir+"cats%02d.fmat.lz4" format randPartNum)
 val tcat = maxi2(tcats, 1)._2
 
 val pmodel = new GLM(new GLM.PredOptions());
