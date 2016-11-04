@@ -394,7 +394,7 @@ extends Command(Command.evalStringCtype, round0, dest0, bytes.size, bytes, bytes
   }
 }
 
-class CallCommand(round0:Int, dest0:Int, func0:(ScriptEngine) => AnyRef, bytes:Array[Byte])
+class CallCommand(round0:Int, dest0:Int, func0:(Worker) => AnyRef, bytes:Array[Byte])
 extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size) {
 
   //var callable = callable0;
@@ -403,7 +403,7 @@ extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size)
 
 
   //def this(round0:Int, dest0:Int, callable0:Callable[AnyRef], class0:Class[_ <:Callable[AnyRef]]) = {
-  def this(round0:Int, dest0:Int, func0:(ScriptEngine) => AnyRef) = {
+  def this(round0:Int, dest0:Int, func0:(Worker) => AnyRef) = {
     this(round0, dest0, func0, {
       val out  = new ByteArrayOutputStream()
 
@@ -451,7 +451,7 @@ extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size)
     val loader = new MyClassLoader;
     val fooCls = loader.loadClass(clsName.trim(), cls_bytes);
 
-    func = fooCls.newInstance.asInstanceOf[(ScriptEngine) => AnyRef];
+    func = fooCls.newInstance.asInstanceOf[(Worker) => AnyRef];
   }
 
   override def toString():String = {
