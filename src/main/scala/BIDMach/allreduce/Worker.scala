@@ -38,7 +38,6 @@ class Worker(override val opts: Worker.Opts = new Worker.Options) extends Host {
   var workerIP:InetAddress = null;
 
   def start(learner0:Learner) = {
-    workerIP = InetAddress.getLocalHost;
     learner = learner0;
     if (model == null && learner != null) model = learner.model;
     executor = Executors.newFixedThreadPool(8);
@@ -47,8 +46,10 @@ class Worker(override val opts: Worker.Opts = new Worker.Options) extends Host {
     intp = new ScriptEngineManager().getEngineByName("scala");
   }
 
-  def config(imach0: Int, gmods0: IMat, gridmachines0: IMat, workers0: Array[InetSocketAddress],
-             masterSocketAddr0: InetSocketAddress) = {
+  def config(
+    imach0:Int, gmods0:IMat, gridmachines0:IMat, workers0:Array[InetSocketAddress],
+    masterSocketAddr0:InetSocketAddress
+  ) = {
     val t1 = toc;
     imach = imach0;
     gmods = gmods0;
@@ -59,6 +60,7 @@ class Worker(override val opts: Worker.Opts = new Worker.Options) extends Host {
     // TODO: HACK, clean this up before mergeing to master
     workers = workers0.map((x) => new InetSocketAddress(x.getAddress(), x.getPort() + 5))
 
+    workers = workers0;
     masterSocketAddr = masterSocketAddr0;
     if (machine != null) machine.stop;
     machine = new Machine(null, groups, imach, M, opts.useLong, opts.bufsize, false, opts.machineTrace, opts.replicate, workers);
