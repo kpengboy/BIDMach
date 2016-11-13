@@ -3,7 +3,7 @@
 # export CUDA_PATH="" # Set here if not set in environment
 
 MEMSIZE="-Xmx14G"
-export JAVA_OPTS="${MEMSIZE} -Xms128M -Dfile.encoding=UTF-8" # Set as much memory as possible
+export JAVA_OPTS="${MEMSIZE} -Xms128M -Dfile.encoding=UTF-8 ${JAVA_OPTS}" # Set as much memory as possible
 BIDMACH_ROOT="${BASH_SOURCE[0]}"
 if [ ! `uname` = "Darwin" ]; then
   BIDMACH_ROOT=`readlink -f "${BIDMACH_ROOT}"`
@@ -77,9 +77,8 @@ TOOL_LIBS="${LIBDIR}/IScala.jar;\
 ${JAVA_HOME}/lib/tools.jar"
 
 CP_LIBS="${TOOL_LIBS};\
-${BIDMACH_ROOT}/BIDMach.jar;\
-${BIDMACH_LIBS};\
 ${JCUDA_LIBS};\
+${BIDMACH_LIBS};\
 ${LIBDIR}/asm-5.1.jar;\
 ${LIBDIR}/commons-io-2.1.jar"
 

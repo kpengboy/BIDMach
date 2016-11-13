@@ -6,6 +6,7 @@ import BIDMat.SciFunctions._
 import BIDMach.Learner
 import edu.berkeley.bid.comm._
 import scala.collection.parallel._
+import scala.collection.mutable.HashMap
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Callable;
@@ -33,12 +34,33 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 
-class MyClassLoader extends ClassLoader {
-  def loadClass(name:String, b:Array[Byte]):Class[_] = {
-    return defineClass(name, b, 0, b.length);
-  }
-}
+class SocketClassLoader(parent:ClassLoader) extends ClassLoader(parent) {
+  val classMap = new HashMap[String, (Class[_], Array[Byte])]
 
+  def defineClass(name:String, b:Array[Byte]):Class[_] = {
+    val cls = super.defineClass(name, b, 0, b.length);
+    classMap.put(name, (cls, b))
+    cls
+  }
+
+  override def findClass(name: String): Class[_] = {
+    val classOption = classMap.get(name)
+    classOption match {
+      case None => super.loadClass(name, true)
+      case Some(x) => x._1
+    }
+  }
+
+  override def loadClass(name: String, resolve: Boolean): Class[_] = {
+    val classOption = classMap.get(name)
+    classOption match {
+      case None => super.loadClass(name, resolve)
+      case Some(x) => x._1
+    }
+  }
+
+  override def loadClass(name: String) = loadClass(name, true)
+}
 
 class Command(val ctype:Int, round0:Int, dest0:Int, val clen:Int, val bytes:Array[Byte], val blen:Int) {
   val magic = Command.magic;
@@ -391,6 +413,7 @@ extends Command(Command.evalStringCtype, round0, dest0, bytes.size, bytes, bytes
 class CallCommand(round0:Int, dest0:Int, func0:(Worker) => AnyRef, bytes:Array[Byte])
 extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size) {
 
+  val sockClsLoader = new SocketClassLoader(Thread.currentThread().getContextClassLoader())
   var func = func0;
 
   //def this(round0:Int, dest0:Int, callable0:Callable[AnyRef], class0:Class[_ <:Callable[AnyRef]]) = {
@@ -441,12 +464,10 @@ extends Command(Command.callCtype, round0, dest0, bytes.size, bytes, bytes.size)
     val cls_bytes = new Array[Byte](cls_len);
     in.read(cls_bytes,0,cls_len);
 
-    val loader = new MyClassLoader;
     // val transformedClsBytes = ClosureCleaner.readAndTransformClass(clsName, cls_bytes);
-    val fooCls = loader.loadClass(clsName, cls_bytes);
+    val fooCls = sockClsLoader.defineClass(clsName, cls_bytes);
 
-    val funcAnyRef = fooCls.newInstance
-    func = funcAnyRef.asInstanceOf[(Worker) => AnyRef]
+    func = fooCls.newInstance.asInstanceOf[(Worker) => AnyRef]
   }
 
   override def toString():String = {
