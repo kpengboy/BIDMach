@@ -32,8 +32,8 @@ class Master(override val opts:Master.Opts = new Master.Options) extends Host {
   var responses:IMat = null;
   var learners:IMat = null;
   var results:Array[AnyRef] = null;
-  var nresults = 0;
   var masterIP:InetAddress = null;
+  var nresults = 0;
 
   def init() {
     masterIP = InetAddress.getLocalHost;

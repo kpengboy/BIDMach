@@ -60,7 +60,6 @@ class Worker(override val opts: Worker.Opts = new Worker.Options) extends Host {
     // TODO: HACK, clean this up before mergeing to master
     workers = workers0.map((x) => new InetSocketAddress(x.getAddress(), x.getPort() + 5))
 
-    workers = workers0;
     masterSocketAddr = masterSocketAddr0;
     if (machine != null) machine.stop;
     machine = new Machine(null, groups, imach, M, opts.useLong, opts.bufsize, false, opts.machineTrace, opts.replicate, workers);
