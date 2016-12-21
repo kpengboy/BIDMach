@@ -1,0 +1,17 @@
+*~
+*.jar
+*.dll
+*.dylib
+*.so
+.cache-main
+.ipynb_checkpoints/
+
+/.settings/
+/bin/
+/cbin/
+/data/MNIST8M/
+/data/movielens/
+/data/rcv1/
+/data/uci/
+/project/
+/target/
