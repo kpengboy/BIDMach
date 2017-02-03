@@ -23,26 +23,26 @@ import BIDMach.networks._
 
 
 class ModelLayer(override val net:Net, override val opts:ModelNodeOpts = new ModelNode, val nmats:Int = 1) extends Layer(net, opts) {
-	var imodel = 0;
+  var imodel = 0;
   
   override def getModelMats(net:Net):Unit = {
-		imodel = if (net.opts.nmodelmats > 0) {             // If explicit model numbers are given, use them. 
-			opts.imodel;
-		} else if (opts.modelName.length > 0) {             // If this is a named layer, look it up. 
-			if (net.modelMap.containsKey(opts.modelName)) {
-				net.modelMap.get(opts.modelName);
-			} else {
-				val len = net.modelMap.size;
-				net.modelMap.put(opts.modelName, len + net.opts.nmodelmats); 	
-				for (i <- 1 until nmats) {
-				  net.modelMap.put(opts.modelName+"_%d" format i, len + i + net.opts.nmodelmats);
-				}
-				len;
-			}
-		} else {                                            // Otherwise return the next available int
-			net.imodel += nmats;
-			net.imodel - nmats;
-		};
+    imodel = if (net.opts.nmodelmats > 0) {             // If explicit model numbers are given, use them. 
+      opts.imodel;
+    } else if (opts.modelName.length > 0) {             // If this is a named layer, look it up. 
+      if (net.modelMap.containsKey(opts.modelName)) {
+        net.modelMap.get(opts.modelName);
+      } else {
+        val len = net.modelMap.size;
+        net.modelMap.put(opts.modelName, len + net.opts.nmodelmats);
+        for (i <- 1 until nmats) {
+          net.modelMap.put(opts.modelName + "_%d" format i, len + i + net.opts.nmodelmats);
+        }
+        len;
+      }
+    } else {                                            // Otherwise return the next available int
+      net.imodel += nmats;
+      net.imodel - nmats;
+    };
   }
 }
 
@@ -57,15 +57,15 @@ trait ModelNodeOpts extends NodeOpts {
     opts;
   }
 }
-    
+
 class ModelNode extends Node with ModelNodeOpts {
-  
+
   def copyTo(opts:ModelNode):ModelNode = {
     this.asInstanceOf[Node].copyTo(opts);
     copyOpts(opts);
     opts
   }
-    
+
   override def clone:ModelNode = {
     copyTo(new ModelNode).asInstanceOf[ModelNode];
   }
