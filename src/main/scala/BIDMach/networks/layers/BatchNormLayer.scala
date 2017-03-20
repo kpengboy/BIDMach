@@ -7,28 +7,22 @@ import BIDMach.networks._
 
 class BatchNormLayer(override val net:Net, override val opts:BatchNormNodeOpts = new BatchNormNode) extends ModelLayer(net, opts) {
   var epsilonMat:Mat = null
-  
-  def initModelMat(nr:Int, nc:Int):Mat = {
-    // TODO what am I actually supposed to put here.
-    rand(nr, nc) - 0.5f
-  }
+  var means:Mat = null
+  var variances:Mat = null
 
   override def forward = {
     val start = toc
     
-    if (modelmats(imodel).asInstanceOf[AnyRef] == null) {
-      modelmats(imodel) = convertMat(initModelMat(inputData.nrows, 2))
-    }
+    // TODO implement test time logic
     if (epsilonMat.asInstanceOf[AnyRef] == null) {
       epsilonMat = ones(1, 1)
       epsilonMat.set(opts.epsilon)
     }
     
     createOutput
-    val means = mean(inputData, 2)
-    val variances = variance(inputData, 2)
-    val z = (inputData - means) / sqrt(variances + epsilonMat)
-    output ~ modelmats(imodel).colslice(0, 1) ∘ z + modelmats(imodel).colslice(1, 2)
+    means = mean(inputData, 2)
+    variances = variance(inputData, 2)
+    output ~ (inputData - means) / sqrt(variances + epsilonMat)
     clearDeriv
 
     forwardtime += toc - start
@@ -37,17 +31,18 @@ class BatchNormLayer(override val net:Net, override val opts:BatchNormNodeOpts =
   override def backward = {
     val start = toc
     
-    // XXX what's the proper way to do this
-    val means = mean(inputData, 2)
-    val diffs = inputData - means
-    val mdiffs = inputData / inputData.ncols - means
-    val variancesPlusEps = variance(inputData, 2) + epsilonMat
-    val thing = -inputData.ncols / sqrt(variancesPlusEps).t
-    val matrow = (diffs ∘ mdiffs).t
-    val diffmat = ones(inputData.ncols, 1) * matrow / variancesPlusEps.t ** 1.5
-    diffmat ~ thing - diffmat
-    diffmat ~ diffmat + mkdiag(variancesPlusEps ** -0.5)
-    inputDeriv ~ inputDeriv + deriv ∘ diffmat
+    // deriv = dl / dy
+    // inputDeriv = dl / dx
+    // updateMats(imodel) (or something) = dl / dW
+    
+    // TODO: implement test time logic
+    
+    val m = inputData.ncols
+    val invStdev = 1 / sqrt(variances + epsilonMat)
+    val devs = inputData - means
+    val m2dldVar = sum(deriv ∘ devs, 2) * (invStdev ** 3)
+    val dldMu = -sum(deriv, 2) * invStdev + m2dldVar * sum(devs, 2) / m
+    inputDeriv ~ inputDeriv + (deriv * invStdev - m2dldVar * devs / m + dldMu / m)
     
     backwardtime += toc - start
   }
