@@ -216,7 +216,7 @@ class Word2Vec(override val opts:Word2Vec.Opts = new Word2Vec.Options) extends M
     val words = if (opts.iflip) wordsens(1,?) else wordsens(0,?);
     val wgood = words < opts.vocabSize;                                        // Find OOV words 
     addTime(1);
-    
+
     rand(randsamp);                                                            // Take a random sample
     val wrat = float(words+1) * salpha;
     wrat ~ sqrt(wrat) + wrat;
@@ -228,7 +228,7 @@ class Word2Vec(override val opts:Word2Vec.Opts = new Word2Vec.Options) extends M
     val ubrand = min(opts.nskip, int(ubound * opts.nskip) + 1);
     val lbrand = - ubrand;
     addTime(3);
-    
+
     val sentencenum = if (opts.iflip) wordsens(0,?) else wordsens(1,?);        // Get the nearest sentence boundaries
     val lbsentence = - cumsumByKey(allones, sentencenum) + 1;
     val ubsentence = reverse(cumsumByKey(allones, reverse(sentencenum))) - 1;
@@ -237,7 +237,7 @@ class Word2Vec(override val opts:Word2Vec.Opts = new Word2Vec.Options) extends M
     test3 = lb
     test4 = ub
     addTime(4);
-    
+
     val (trandwords, contextwords) = (words, lb, ub) match {
       case (giwords:GIMat, gilb:GIMat, giub:GIMat) => {
 
@@ -1349,16 +1349,19 @@ object Word2Vec  {
   // Write a Google Word2Vec model file in binary or text format. 
   
   def saveGoogleW2V(dict:CSMat, mod:FMat, fname:String, binary:Boolean = false) = {
+    val nwords = if (mod.ncols < dict.length) {
+      mod.ncols;
+    } else {
+      println("Warning: dictionary is smaller than model word count - you should reduce vocabSize in the Word2Vec model");
+      dict.length;
+    }
   	val outs = HMat.getOutputStream(fname, 0);
   	val dout = new DataOutputStream(outs);
-  	val fout = new PrintWriter(dout);
   	val cr = String.format("\n");
-  	fout.print(mod.ncols.toString + " " + mod.nrows.toString + cr);
-  	fout.flush;
+  	dout.writeBytes(nwords.toString + " " + mod.nrows.toString + cr);
   	var i = 0;
-  	while (i < mod.ncols) {
-  		fout.print(dict(i)+ " ");
-  		fout.flush;
+  	while (i < nwords) {
+		dout.writeBytes(dict(i)+ " ");
   		var nwritten = 0;
   		var j = 0;
   		while (j < mod.nrows) {

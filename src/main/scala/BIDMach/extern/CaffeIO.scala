@@ -28,24 +28,23 @@ object CaffeIO {
             noutputs = convParam.getNumOutput()
             hasBias = convParam.getBiasTerm()
             if (convParam.hasPadW()) {
-              pad = Arrays.asList(convParam.getPadW(), convParam.getPadH())
+              pad = convParam.getPadW() \ convParam.getPadH()
             } else {
-              pad = convParam.getPadList()
+              pad = irow(convParam.getPadList().map(_.intValue()).toList)
             }
             if (convParam.hasKernelW()) {
-              kernel = Arrays.asList(convParam.getKernelW(), convParam.getKernelH())
+              kernel = convParam.getKernelW() \ convParam.getKernelH()
             } else {
-              kernel = convParam.getKernelSizeList()
+              kernel = irow(convParam.getKernelSizeList().map(_.intValue()).toList)
             }
             if (convParam.hasStrideW()) {
-              stride = Arrays.asList(convParam.getStrideW(), convParam.getStrideH())
+              stride = convParam.getStrideW() \ convParam.getStrideH()
             } else {
-              stride = convParam.getStrideList()
+              stride = irow(convParam.getStrideList().map(_.intValue()).toList)
             }
-            dilation = convParam.getDilationList()
-            group = convParam.getGroup()
-            axis = convParam.getAxis()
-            forceND = convParam.getForceNdIm2Col()
+            dilation = irow(convParam.getDilationList().map(_.intValue()).toList)
+            //group = convParam.getGroup()
+            //axis = convParam.getAxis()
           }
         }
         case "Pooling" => {
