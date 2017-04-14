@@ -106,8 +106,8 @@ class SoftmaxOutputLayer(override val net:Net, override val opts:SoftmaxOutputNo
 }
 
 trait SoftmaxOutputNodeOpts extends NodeOpts {
-	var scoreType = 0;
-	var lossType = 0;
+	var scoreType = SoftmaxOutputLayer.CrossEntropyScore;
+	var lossType = SoftmaxOutputLayer.CrossEntropyLoss;
 	var eps = 1e-5f;
 		
 	def copyOpts(opts:SoftmaxOutputNodeOpts):SoftmaxOutputNodeOpts = {
