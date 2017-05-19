@@ -556,11 +556,11 @@ object Layer {
   
   def abs(a:LayerTerm) = new AbsLayer(null){inputs(0) = a;};
   
-  def batchNorm(a:LayerTerm)(avgFactor:Float=0.1f, normMode:Int=BatchNormLayer.SPATIAL) = {
+  def batchNorm(a:LayerTerm)(avgFactor:Float=0.1f, normMode:Int=BatchNormLayer.Spatial) = {
     new BatchNormLayer(null, new BatchNormNode{expAvgFactor=avgFactor; batchNormMode=normMode}){inputs(0)=a;}
   }
   
-  def batchNormScale(a:LayerTerm)(name:String="", avgFactor:Float=0.1f, normMode:Int=BatchNormLayer.SPATIAL, hasBias:Boolean = true, 
+  def batchNormScale(a:LayerTerm)(name:String="", avgFactor:Float=0.1f, normMode:Int=BatchNormLayer.Spatial, hasBias:Boolean = true, 
       lr_scale:Float=1f, bias_scale:Float=1f, inplace:Int = Net.UseNetPlacing, net:Net=null) = {
     val hb = hasBias;
   	val mname = name;
@@ -774,7 +774,7 @@ object Layer {
     new PoolingLayer(net, new PoolingNode{h=hh; w=ww; stridey=str; stridex=str; pady=ppad; padx=ppad; poolingMode=pm; poolingNaN=pn; tensorFormat=tf;}){inputs(0)=a;}
   }
   
-  def scale(a:LayerTerm)(name:String="", normMode:Int=BatchNormLayer.SPATIAL, hasBias:Boolean = true, lr_scale:Float=1f, bias_scale:Float=1f, net:Net=null) = {
+  def scale(a:LayerTerm)(name:String="", normMode:Int=BatchNormLayer.Spatial, hasBias:Boolean = true, lr_scale:Float=1f, bias_scale:Float=1f, net:Net=null) = {
   	val hb = hasBias;
   	val mname = name;
   	val lrs = lr_scale;
