@@ -13,6 +13,9 @@
     <scalaVersion>2.11</scalaVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipTests>true</skipTests>
+    <protobuf.version>3.5.1</protobuf.version>
+    <protobuf.input.directory>${project.basedir}/src/main/protobuf</protobuf.input.directory>
+    <protobuf.output.directory>${project.build.directory}/generated-sources</protobuf.output.directory>
   </properties>
   <repositories>
     <repository>
@@ -240,7 +243,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.1.0</version>
+      <version>${protobuf.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
@@ -303,6 +306,26 @@
         <version>2.10</version>
         <executions>
           <execution>
+            <id>copy-protoc</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.google.protobuf</groupId>
+                  <artifactId>protoc</artifactId>
+                  <version>${protobuf.version}</version>
+                  <classifier>${os.detected.classifier}</classifier>
+                  <type>exe</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+          <execution>
             <id>copy-dependencies</id>
             <phase>package</phase>
             <goals>
@@ -337,7 +360,69 @@
           </filesets>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>exec-protoc</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <property name="protoc.filename" value="protoc-${protobuf.version}-${os.detected.classifier}.exe" />
+                <property name="protoc.filepath" value="${project.build.directory}/${protoc.filename}" />
+                <chmod file="${protoc.filepath}" perm="ugo+x" />
+                <mkdir dir="${protobuf.output.directory}" />
+                <path id="protobuf.input.filepaths.path">
+                  <fileset dir="${protobuf.input.directory}">
+                    <include name="**/*.proto"/>
+                  </fileset>
+                </path>
+                <pathconvert pathsep=" " property="protobuf.input.filepaths" refid="protobuf.input.filepaths.path"/>
+                <exec executable="${protoc.filepath}" failonerror="true">
+                  <arg value="-I"/>
+                  <arg value="${protobuf.input.directory}"/>
+                  <arg value="--java_out"/>
+                  <arg value="${protobuf.output.directory}"/>
+                  <arg line="${protobuf.input.filepaths}"/>
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${protobuf.output.directory}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+    <extensions>
+      <!-- provides os.detected.classifier (i.e. linux-x86_64, osx-x86_64) property -->
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.6.0</version>
+      </extension>
+    </extensions>
     <resources>
       <resource>
 	<directory>lib/</directory>
